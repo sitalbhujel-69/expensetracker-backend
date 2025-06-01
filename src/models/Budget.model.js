@@ -25,4 +25,7 @@ const budgetSchema = new Schema({
   }
 },{timestamps:true})
 
+budgetSchema.index({ user: 1, month: 1 }, { unique: true });
+
+
 export const Budget = mongoose.model('Budget',budgetSchema)

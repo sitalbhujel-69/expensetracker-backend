@@ -5,6 +5,10 @@ const setBudget = async (req,res)=>{
   const userId = req.user?._id;
   const {amount,period,month,year} =req.body;
   try {
+    const existedBudget =await Budget.findOne({owner:userId,month})
+    if(existedBudget){
+      return res.status(400).json({message:"budget already set"})
+    }
     const budget = await Budget.create({
       owner:userId,
       amount,
