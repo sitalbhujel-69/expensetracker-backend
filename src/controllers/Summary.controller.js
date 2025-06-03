@@ -1,14 +1,35 @@
 import mongoose from "mongoose";
 import { Transaction } from "../models/Transaction.model.js";
 
-const getSummary = async (req, res) => {
-  const userId = req.user?._id;
 
+
+const getSummary = async (req, res) => {
+  const { month } = req.query;
+  let startDate;
+  let endDate;
+  if (month) {
+    const [year, monthStr] = month.split("-");
+    startDate = new Date(year, parseInt(monthStr) - 1, 1);
+    endDate = new Date(year, parseInt(monthStr), 1);
+    console.log(startDate, endDate);
+  } else {
+    const currentDate = new Date();
+    const year = currentDate.getFullYear();
+    const monthStr = currentDate.getMonth();
+    startDate = new Date(year,parseInt(monthStr)-1,1)
+    endDate = new Date(year,parseInt(monthStr),1)
+    console.log(startDate,endDate)
+  }
+  const userId = req.user?._id;
   try {
     const result = await Transaction.aggregate([
       {
         $match: {
           owner: new mongoose.Types.ObjectId(userId),
+          date: {
+            $gte: startDate,
+            $lte: endDate,
+          },
         },
       },
       {
@@ -20,12 +41,12 @@ const getSummary = async (req, res) => {
         },
       },
     ]);
+    console.log(result);
     let income = 0;
     let expense = 0;
 
     result.forEach((item) => {
-      if (item._id === "income") income = item.total;
-      if (item._id === "expense") expense = item.total;
+      item._id === "income" ? (income = item.total) : (expense = item.total);
     });
 
     const summary = {
