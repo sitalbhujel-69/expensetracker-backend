@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { Transaction } from "../models/Transaction.model.js";
+import { Budget } from "../models/Budget.model.js";
 
 
 
@@ -9,14 +10,13 @@ const getSummary = async (req, res) => {
   const matchData = {
     owner:new mongoose.Types.ObjectId(userId)
   }
-  const {type,category,start,end} = req.query;
+  const {category,start,end} = req.query;
   if(start && end){
     matchData.date = {
       $gte:new Date(start),
       $lte:new Date(end)
     }
   }
-  if(type)matchData.type=type;
   if(category)matchData.category = category
   try {
     const result = await Transaction.aggregate([
@@ -39,11 +39,13 @@ const getSummary = async (req, res) => {
     result.forEach((item) => {
       item._id === "income" ? (income = item.total) : (expense = item.total);
     });
-
+    const totalBudget =await Budget.findOne({owner:userId})
+    console.log(totalBudget)
     const summary = {
+      budget:totalBudget.amount,
       income,
       expense,
-      savings: income - expense,
+      savings:totalBudget.amount + income - expense,
     };
 
     return res.status(200).json({ summary });
