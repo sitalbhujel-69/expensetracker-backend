@@ -45,7 +45,7 @@ const getSummary = async (req, res) => {
       budget:totalBudget.amount,
       income,
       expense,
-      savings:totalBudget.amount + income - expense,
+      savings: income - expense,
     };
 
     return res.status(200).json({ summary });

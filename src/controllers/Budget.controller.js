@@ -23,4 +23,31 @@ const setBudget = async (req,res)=>{
   }
 }
 
-export {setBudget}
+const getBudget = async (req,res)=>{
+  const userId = req.user?._id;
+  const {month,year} = req.query; 
+  try {
+    const budget = await Budget.findOne({
+      owner:userId,
+      year,
+      month
+    })
+    if(!budget){
+      return res.status(404).json({
+        message:"Budget not found"
+      })
+    }
+    return res.status(200).json({
+      message:"Budget fetched successfully",
+      data:budget
+    })
+
+  } catch (error) {
+    console.error(error)
+    return res.status(500).json({
+      message:"something went wrong while fetching budget"
+    })
+  }
+}
+
+export {setBudget,getBudget}
